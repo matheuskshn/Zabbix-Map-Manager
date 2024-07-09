@@ -1,0 +1,5 @@
+mapmanager/zabbix_api/config.py
+__pycache__/
+venv/
+.vscode/
+db.sqlite3

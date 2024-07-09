@@ -1,0 +1,237 @@
+<!-- mapmanager/templates/map_form.html -->
+{% extends "base.html" %}
+{% load widget_tweaks %}
+
+{% block content %}
+
+<form method="post" class="row g-3">
+  {% csrf_token %}
+  
+  <div class="col-12">
+      <label for="{{ form.map_name.id_for_label }}" class="form-label h6">Nome do Mapa</label>
+      <small class="text-muted d-block">Informe o nome do mapa que deseja criar:</small>
+      {{ form.map_name.errors }}
+      {{ form.map_name|add_class:"form-control" }}
+  </div>
+
+  <!-- Checkbox para mostrar/ocultar o campo de grupos -->
+  <div class="col-12">
+    <input type="checkbox" id="showAddGroups" class="form-check-input">
+    <label class="form-check-label" for="showAddGroups">Adicionar um grupo de hosts</label>
+  </div>
+
+  <div class="add-groups-field col-12" style="display:none;">
+    <label for="{{ form.map_groups.id_for_label }}" class="form-label h6">Grupos de Hosts</label><br>
+    <small class="text-muted d-block">Informe um ou mais grupos. Se adicionar mais de um, separe-os com uma vírgula (,):</small>
+    {{ form.map_groups|add_class:"form-control" }}
+  </div>
+
+  <!-- Checkbox para mostrar/ocultar o campo de hosts -->
+  <div class="col-12">
+    <input type="checkbox" id="showAddHosts" class="form-check-input">
+    <label class="form-check-label" for="showAddHosts">Adicionar hosts</label>
+  </div>
+
+  <div class="add-hosts-field col-12" style="display:none;">
+    <label for="{{ form.map_hosts.id_for_label }}" class="form-label h6">Hosts</label><br>
+    <small class="text-muted d-block">Informe um ou mais hosts. Se adicionar mais de um, separe-os com uma vírgula (,):</small>
+    {{ form.map_hosts|add_class:"form-control" }}
+  </div>
+
+  <!-- Checkbox para mostrar/ocultar o campo de IPs -->
+  <div class="col-12">
+    <input type="checkbox" id="showAddIPs" class="form-check-input">
+    <label class="form-check-label" for="showAddIPs">Adicionar IPs</label>
+  </div>
+
+  <div class="add-ips-field col-12" style="display:none;">
+    <label for="{{ form.map_ips.id_for_label }}" class="form-label h6">IPs</label><br>
+    <small class="text-muted d-block">Informe um ou mais ips. Se adicionar mais de um, separe-os com uma vírgula (,):</small>
+    {{ form.map_ips|add_class:"form-control" }}
+  </div>
+
+  <!-- Checkbox para mostrar/ocultar o campo de hostsFilter -->
+  <div class="col-12">
+    <input type="checkbox" id="showAddHostsFilter" class="form-check-input">
+    <label class="form-check-label" for="showAddHostsFilter">Adicionar hosts por filtro</label>
+  </div>
+
+  <div class="add-hosts-filter-field col-12" style="display:none;">
+    <label for="{{ form.map_hosts_filter.id_for_label }}" class="form-label h6">Prefixos de hosts</label><br>
+    <small class="text-muted d-block">Informe uma ou mais partes iniciais do nome dos hosts que deseja filtrar. Se adicionar mais de um, separe-os com uma vírgula (,).</small>
+    <small class="text-danger d-block">Cuidado, não seja muito abrangente no filtro. Esteja ciente que se o início do seu filtro der match com muitos hosts (mais de 600), o mapa pode ser criado com um tamanho enorme e prejudicar o desempenho do Zabbix.</small>
+    <small class="text-muted d-block">O filtro será aplicado aos hosts que iniciam com a string fornecida:</small>
+    {{ form.map_hosts_filter|add_class:"form-control" }}
+  </div>
+
+  <!-- Checkbox para "Criar Link entre os elementos" -->
+  <div class="col-12">
+    {{ form.create_link|add_class:"form-check-input" }}
+    <label class="form-check-label" for="{{ form.create_link.id_for_label }}">Criar Link entre os elementos</label>
+  </div>
+
+  <!-- Checkbox para mostrar/ocultar campo 'Adicionar Trigger nos links' -->
+  <div class="col-12">
+    {{ form.add_trigger|add_class:"form-check-input" }}
+    <label class="form-check-label" for="{{ form.add_trigger.id_for_label }}">Adicionar Trigger nos links</label>
+  </div>
+
+  <div class="add-trigger-field col-12" style="display:none; padding-left: 30px;">
+    {{ form.unavailable_by_icmp|add_class:"form-check-input" }}
+    <label class="form-check-label" for="{{ form.unavailable_by_icmp.id_for_label }}">Link Trigger "is unavailable by ICMP"</label><br>
+    
+    {{ form.snmp_not_responding|add_class:"form-check-input" }}
+    <label class="form-check-label" for="{{ form.snmp_not_responding.id_for_label }}">Link Trigger "SNMP not responding"</label>
+  </div>
+  
+  <div class="col-12">
+      <button type="submit" class="btn btn-primary">Criar Mapa</button><br>
+  </div>
+</form>
+
+<!--HTML do modal -->
+<div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title" id="confirmModalLabel">Confirmar Dados</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+              <p class="mb-3">Confirma os seguintes dados?</p>
+              <div class="col-12 mb-3">
+                  <label><strong>Nome do Mapa:</strong></label><br>
+                  <span id="confirmMapName"></span>
+              </div>
+              <div class="col-12 mb-3">
+                  <label><strong>Grupos de Hosts:</strong></label><br>
+                  <span id="confirmMapGroups"></span>
+              </div>
+              <div class="col-12 mb-3">
+                  <label><strong>Hosts:</strong></label><br>
+                  <span id="confirmMapHosts"></span>
+              </div>
+              <div class="col-12 mb-3">
+                  <label><strong>IPs:</strong></label><br>
+                  <span id="confirmMapIps"></span>
+              </div>
+              <div class="col-12 mb-3">
+                <label><strong>Prefixos de Hosts:</strong></label><br>
+                <span id="confirmMapHostsFilter"></span>
+              </div>
+              <div class="col-12 mb-3">
+                  <label><strong>Criar Link entre os elementos:</strong></label>
+                  <span id="confirmCreateLink"></span>
+              </div>
+              <div class="col-12 mb-3">
+                  <label><strong>Adicionar Trigger nos links:</strong></label>
+                  <span id="confirmAddTrigger"></span>
+                  <div style="padding-left: 30px;">
+                      <div class="col-12 mb-3">
+                          <label><strong>Link Trigger "is unavailable by ICMP":</strong></label>
+                          <span id="confirmUnavailableByICMP"></span>
+                      </div>
+                      <div class="col-12 mb-3">
+                          <label><strong>Link Trigger "SNMP not responding":</strong></label>
+                          <span id="confirmSNMPNotResponding"></span>
+                      </div>
+                  </div>
+              </div>
+          </div>
+          <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Voltar</button>
+              <button type="button" class="btn btn-primary" id="confirmSubmit">Confirmar</button>
+          </div>
+      </div>
+  </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+      const form = document.querySelector('form');
+      const mapNameInput = document.querySelector('#id_map_name');
+      const mapGroupsInput = document.querySelector('#id_map_groups');
+      const mapHostsInput = document.querySelector('#id_map_hosts');
+      const mapIpsInput = document.querySelector('#id_map_ips');
+      const mapHostsFilterInput = document.querySelector('#id_map_hosts_filter');
+      
+      const confirmModal = new bootstrap.Modal(document.getElementById('confirmModal'));
+      const confirmMapName = document.querySelector('#confirmMapName');
+      const confirmMapGroups = document.querySelector('#confirmMapGroups');
+      const confirmMapHosts = document.querySelector('#confirmMapHosts');
+      const confirmMapIps = document.querySelector('#confirmMapIps');
+      const confirmMapHostsFilter = document.querySelector('#confirmMapHostsFilter');
+      const confirmSubmitBtn = document.querySelector('#confirmSubmit');
+    
+      function toggleFieldVisibility(checkboxId, fieldClass) {
+        const checkbox = document.getElementById(checkboxId);
+        const field = document.querySelector('.' + fieldClass);
+        const inputField = field.querySelector('textarea');
+    
+        checkbox.addEventListener('change', function() {
+            if (checkbox.checked) {
+                field.style.display = 'block';
+                inputField.setAttribute('required', true);
+            } else {
+                field.style.display = 'none';
+                inputField.removeAttribute('required');
+                inputField.value = "";
+            }
+        });
+      }
+
+      function toggleTriggerFieldVisibility() {
+        const addTriggerCheckbox = document.querySelector('#' + "{{ form.add_trigger.id_for_label }}");
+        const triggerField = document.querySelector('.add-trigger-field');
+
+        addTriggerCheckbox.addEventListener('change', function() {
+            if (addTriggerCheckbox.checked) {
+                triggerField.style.display = 'block';
+            } else {
+                triggerField.style.display = 'none';
+                triggerField.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+                    checkbox.checked = false;
+                });
+            }
+        });
+      }
+
+      form.addEventListener('submit', function(e) {
+          e.preventDefault();
+
+          confirmMapName.textContent = mapNameInput.value || "Não definido";
+          confirmMapGroups.textContent = document.getElementById('showAddGroups').checked ? (mapGroupsInput.value || "Não definido") : "Não definido";
+          confirmMapHosts.textContent = document.getElementById('showAddHosts').checked ? (mapHostsInput.value || "Não definido") : "Não definido";
+          confirmMapIps.textContent = document.getElementById('showAddIPs').checked ? (mapIpsInput.value || "Não definido") : "Não definido";
+          confirmMapHostsFilter.textContent = document.getElementById('showAddHostsFilter').checked ? (mapHostsFilterInput.value || "Não definido") : "Não definido";
+
+          confirmCreateLink.textContent = document.querySelector('#id_create_link').checked ? "Sim" : "Não";
+          let isAddTriggerChecked = document.querySelector('#id_add_trigger').checked;
+
+          confirmAddTrigger.textContent = isAddTriggerChecked ? "Sim" : "Não";
+      
+          if (isAddTriggerChecked) {
+            confirmUnavailableByICMP.textContent = document.querySelector('#id_unavailable_by_icmp').checked ? "Sim" : "Não";
+            confirmSNMPNotResponding.textContent = document.querySelector('#id_snmp_not_responding').checked ? "Sim" : "Não";            
+          } else {
+              confirmUnavailableByICMP.textContent = "N/A";
+              confirmSNMPNotResponding.textContent = "N/A";
+          }
+
+          confirmModal.show();
+      });
+
+      confirmSubmitBtn.addEventListener('click', function() {
+        form.submit();
+      });
+    
+      toggleFieldVisibility('showAddGroups', 'add-groups-field');
+      toggleFieldVisibility('showAddHosts', 'add-hosts-field');
+      toggleFieldVisibility('showAddIPs', 'add-ips-field');
+      toggleFieldVisibility('showAddHostsFilter', 'add-hosts-filter-field');
+
+      toggleTriggerFieldVisibility();
+    });
+    </script>
+    
+{% endblock %}

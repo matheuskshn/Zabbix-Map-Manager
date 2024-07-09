@@ -1,0 +1,45 @@
+<!-- mapmanager/templates/map_result.html -->
+{% extends "base.html" %}
+{% block content %}
+{% if data.map_link %}
+    <h2>Novo Mapa Criado com sucesso:</h2>
+    <p><a href="{{ data.map_link }}" target="_blank" rel="noopener noreferrer">Acessar o Mapa ID: {{ data.sysmapid }}</a></p>
+{% else %}
+    <p>{{ data.mensagem }}</p>
+{% endif %}
+
+<h3>Entradas do Mapa</h3>
+<ul>
+    <li>Nome do Mapa: {{ data.map_name }}</li>
+    <li>Grupos de Hosts: {{ data.map_groups }}</li>
+    <li>Hosts: {{ data.map_hosts }}</li>
+    <li>IPs: {{ data.map_ips }}</li>
+    <li>Hosts por Filtro: {{ data.map_hosts_filter }}</li>
+    <li>Criar Link entre os elementos: {{ data.create_link|yesno:"Sim,Não" }}</li>
+    <li>Adicionar Trigger nos links: {{ data.add_trigger|yesno:"Sim,Não" }}</li>
+    <li>Trigger "is unavailable by ICMP": {{ data.trigger_icmp|yesno:"Sim,Não" }}</li>
+    <li>Trigger "SNMP not responding": {{ data.trigger_snmp|yesno:"Sim,Não" }}</li>
+</ul>
+
+<!--
+<h3>Status 1:</h3>
+<p>{{ data.mensagem }}</p>
+
+-->
+<h3>Elementos do mapa encontrados:</h3>
+<!--
+<p>{{ data.host_elements }}</p>
+
+<h3>Informações Adicionais:</h3>
+-->
+<ul>
+    <li>Hosts encontrados por grupo: {{ data.qt_found_group }}</li>
+    <li>Hosts encontrados por hostname: {{ data.qt_found_host }}</li>
+    <li>Hosts encontrados por IP: {{ data.qt_found_ip }}</li>
+    <li>Hosts encontrados por Filtro: {{ qt_found_host_filter }}</li>
+    <li>Hosts duplicados: {{ data.qt_duplicate_host }}</li>
+    <li>Total de hosts adicionados ao mapa: {{ data.qt_all_hosts }}</li>
+</ul>
+
+<!--<p>{{ data.new_mapa}}</p>-->
+{% endblock %}

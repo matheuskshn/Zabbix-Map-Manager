@@ -1,0 +1,5 @@
+Django== 4.2
+pyzabbix
+djangorestframework
+django-cors-headers
+django-widget-tweaks
