@@ -34,7 +34,7 @@ def main(map_name, map_groups, map_hosts, map_ips, map_hosts_filter, create_link
             print(create_result)
             sysmapid = create_result['sysmapids'][0]
             new_map = map_params
-            map_link = f"{zbx_url}zabbix.php?action=map.view&sysmapid={sysmapid}"
+            map_link = f"{zbx_url}/zabbix.php?action=map.view&sysmapid={sysmapid}"
             new_map = map_params
         else:
             mensagem = 'Criando mapa sem elementos'
@@ -43,7 +43,7 @@ def main(map_name, map_groups, map_hosts, map_ips, map_hosts_filter, create_link
             print(create_result)
             sysmapid = create_result['sysmapids'][0]
             new_map = map_params
-            map_link = f"{zbx_url}zabbix.php?action=map.view&sysmapid={sysmapid}"
+            map_link = f"{zbx_url}/zabbix.php?action=map.view&sysmapid={sysmapid}"
     else:
         mensagem = "Nome do mapa não fornecido"
 
